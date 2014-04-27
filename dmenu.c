@@ -56,7 +56,7 @@ static unsigned int lines = 0;
 static ColorSet *normcol;
 static ColorSet *selcol;
 static Atom clip, utf8;
-static Bool topbar = True;
+static Bool topbar = True, incremental = False;
 static Bool running = True;
 static int ret = 0;
 static DC *dc;
@@ -88,6 +88,8 @@ main(int argc, char *argv[]) {
 			fstrncmp = strncasecmp;
 			fstrstr = cistrstr;
 		}
+		else if(!strcmp(argv[i], "-r"))
+			incremental = 1;
 		else if(i+1 == argc)
 			usage();
 		/* these options take one argument */
@@ -203,7 +205,7 @@ drawmenu(void) {
 	dc->w = (lines > 0 || !matches) ? mw - dc->x : inputw;
 	drawtext(dc, text, normcol);
 	if((curpos = textnw(dc, text, cursor) + dc->h/2 - 2) < dc->w)
-		drawrect(dc, curpos, 2, 1, dc->h - 4, True, normcol->FG);
+		drawrect(dc, curpos+2, 2, 5, dc->h - 4, True, normcol->FG);
 
 	if(lines > 0) {
 		/* draw vertical list */
@@ -412,6 +414,10 @@ keypress(XKeyEvent *ev) {
 		cursor = strlen(text);
 		match();
 		break;
+	}
+	if(incremental) {
+		fprintf(stdout, "%s\n", text);
+		fflush(stdout);
 	}
 	drawmenu();
 }
@@ -627,7 +633,7 @@ setup(void) {
 
 void
 usage(void) {
-	fputs("usage: dmenu [-b] [-f] [-i] [-l lines] [-p prompt] [-fn font]\n"
+	fputs("usage: dmenu [-b] [-f] [-i] [-r] [-l lines] [-p prompt] [-fn font]\n"
 	      "             [-nb color] [-nf color] [-sb color] [-sf color] [-v]\n", stderr);
 	exit(EXIT_FAILURE);
 }
