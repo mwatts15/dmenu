@@ -262,6 +262,7 @@ insert(const char *str, ssize_t n) {
 void
 keypress(XKeyEvent *ev) {
 	char buf[32];
+    char *p = NULL;
 	int len;
 	KeySym ksym = NoSymbol;
 	Status status;
@@ -385,6 +386,8 @@ keypress(XKeyEvent *ev) {
 		break;
 	case XK_Return:
 	case XK_KP_Enter:
+		if((p = strchr(sel->text, '\n')))
+			*p = '\0';
 		puts((sel && !(ev->state & ShiftMask)) ? sel->text : text);
 		ret = EXIT_SUCCESS;
 		running = False;
@@ -590,7 +593,6 @@ setup(void) {
 		x = info[i].x_org;
 		y = info[i].y_org + (topbar ? 0 : info[i].height - mh);
 		mw = mw ? mw : info[i].width * ((double)mwperc / 100);
-        printf("mw = %d\n", mw);
 		XFree(info);
 	}
 	else
