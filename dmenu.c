@@ -388,8 +388,8 @@ keypress(XKeyEvent *ev) {
 		break;
 	case XK_Return:
 	case XK_KP_Enter:
-		if((p = strchr(sel->text, '\n')))
-			*p = '\0';
+//		if((p = strchr(sel->text, '\n')))
+//			*p = '\0';
 		puts((sel && !(ev->state & ShiftMask)) ? sel->text : text);
 		ret = EXIT_SUCCESS;
 		running = False;
@@ -415,7 +415,8 @@ keypress(XKeyEvent *ev) {
 		match();
 		break;
 	}
-	if(incremental) {
+	if (incremental && (ksym != XK_KP_Enter) && (ksym != XK_Return))
+    {
 		fprintf(stdout, "%s\n", text);
 		fflush(stdout);
 	}

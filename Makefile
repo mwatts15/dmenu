@@ -22,7 +22,7 @@ ${OBJ}: config.mk draw.h
 
 dmenu: dmenu.o draw.o
 	@echo CC -o $@
-	@${CC} -o $@ dmenu.o draw.o ${LDFLAGS}
+	@${CC} ${CFLAGS} -g -o $@ dmenu.o draw.o ${LDFLAGS}
 
 stest: stest.o
 	@echo CC -o $@
