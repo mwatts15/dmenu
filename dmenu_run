@@ -12,4 +12,4 @@ fi
 	else
 		dmenu "$@" < "$cache"
 	fi
-) | ${SHELL:-"/bin/sh"} &
+) | DMENU_RUN=1 ${SHELL:-"/bin/sh"} &
