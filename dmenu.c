@@ -119,7 +119,7 @@ drawmenu(void)
 {
 	int curpos;
 	struct item *item;
-	int x = 0, y = 0, h = bh, w;
+	int x = 0, y = 0, fh = drw->fonts[0]->h, w;
 
 	drw_setscheme(drw, &scheme[SchemeNorm]);
 	drw_rect(drw, 0, 0, mw, mh, 1, 1, 1);
@@ -134,16 +134,16 @@ drawmenu(void)
 	drw_setscheme(drw, &scheme[SchemeNorm]);
 	drw_text(drw, x, 0, w, bh, text, 0);
 
-	if ((curpos = TEXTNW(text, cursor) + bh / 2 - 2) < w) {
+	if ((curpos = TEXTNW(text, cursor) + fh / 2 - 2) < w) {
 		drw_setscheme(drw, &scheme[SchemeNorm]);
-		drw_rect(drw, x + curpos + 2, 2, 1, bh - 4, 1, 1, 0);
+		drw_rect(drw, x + curpos + 2, 2 + (bh-fh)/2, 1, fh - 4, 1, 1, 0);
 	}
 
 	if (lines > 0) {
 		/* draw vertical list */
 		w = mw - x;
 		for (item = curr; item != next; item = item->right) {
-			y += h;
+			y += bh;
 			if (item == sel)
 				drw_setscheme(drw, &scheme[SchemeSel]);
 			else if (item->out)
@@ -544,6 +544,7 @@ setup(void)
 
 	/* calculate menu geometry */
 	bh = drw->fonts[0]->h + 2;
+	bh = MAX(bh,lineheight);	/* make a menu line AT LEAST 'lineheight' tall */
 	lines = MAX(lines, 0);
 	mh = (lines + 1) * bh;
 #ifdef XINERAMA
@@ -608,7 +609,7 @@ setup(void)
 static void
 usage(void)
 {
-	fputs("usage: dmenu [-b] [-f] [-i] [-l lines] [-p prompt] [-fn font] [-m monitor]\n"
+	fputs("usage: dmenu [-b] [-f] [-i] [-l lines] [-p prompt] [-fn font] [-lh height] [-m monitor]\n"
 	      "             [-nb color] [-nf color] [-sb color] [-sf color] [-v]\n", stderr);
 	exit(1);
 }
@@ -641,6 +642,10 @@ main(int argc, char *argv[])
 			prompt = argv[++i];
 		else if (!strcmp(argv[i], "-fn"))  /* font or font set */
 			fonts[0] = argv[++i];
+		else if(!strcmp(argv[i], "-lh")) { /* minimum height of one menu line */
+			lineheight = atoi(argv[++i]);
+			lineheight = MAX(lineheight,8); /* reasonable default in case of value too small/negative */
+		}
 		else if (!strcmp(argv[i], "-nb"))  /* normal background color */
 			normbgcolor = argv[++i];
 		else if (!strcmp(argv[i], "-nf"))  /* normal foreground color */
