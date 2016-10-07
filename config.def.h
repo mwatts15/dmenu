@@ -22,3 +22,4 @@ static unsigned int lines      = 0;
  * for example: " /?\"&[]"
  */
 static const char worddelimiters[] = " ";
+static unsigned int lineheight = 0;         /* -lh option; minimum height of a menu line     */
