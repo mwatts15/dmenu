@@ -6,10 +6,11 @@ dmenu \- dynamic menu
 .RB [ \-b ]
 .RB [ \-f ]
 .RB [ \-i ]
+.RB [ \-r ]
 .RB [ \-l
+.IR lines ]
 .RB [ \-m
 .IR monitor ]
-.IR lines ]
 .RB [ \-p
 .IR prompt ]
 .RB [ \-fn
@@ -49,6 +50,9 @@ X until stdin reaches end\-of\-file.
 .B \-i
 dmenu matches menu items case insensitively.
 .TP
+.B \-r
+dmenu outputs text each time a key is pressed.
+.TP
 .BI \-l " lines"
 dmenu lists items vertically, with the given number of lines.
 .TP
@@ -63,7 +67,7 @@ defines the prompt to be displayed to the left of the input field.
 dmenu outputs text each time a key is pressed.
 .TP
 .BI \-fn " font"
-defines the font or font set used.
+defines the font or font set used. eg. "fixed" or "Monospace-12:normal" (an xft font)
 .TP
 .BI \-nb " color"
 defines the normal background color.

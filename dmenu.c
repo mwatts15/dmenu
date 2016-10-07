@@ -81,10 +81,10 @@ calcoffsets(void)
 		n = mw - (promptw + inputw + TEXTW("<") + TEXTW(">"));
 	/* calculate which items will begin the next page and previous page */
 	for (i = 0, next = curr; next; next = next->right)
-		if ((i += (lines > 0) ? bh : TEXTW(next->text)) > n)
+		if ((i += (lines > 0) ? bh : MIN(TEXTW(next->text), n)) > n)
 			break;
 	for (i = 0, prev = curr; prev && prev->left; prev = prev->left)
-		if ((i += (lines > 0) ? bh : TEXTW(prev->left->text)) > n)
+		if ((i += (lines > 0) ? bh : MIN(TEXTW(prev->left->text), n)) > n)
 			break;
 }
 
@@ -187,7 +187,7 @@ grabkeyboard(void)
 			return;
 		nanosleep(&ts, NULL);
 	}
-	die("cannot grab keyboard\n");
+	die("cannot grab keyboard");
 }
 
 static void
@@ -205,7 +205,7 @@ match(void)
 	/* separate input text into tokens to be matched individually */
 	for (s = strtok(buf, " "); s; tokv[tokc - 1] = s, s = strtok(NULL, " "))
 		if (++tokc > tokn && !(tokv = realloc(tokv, ++tokn * sizeof *tokv)))
-			die("cannot realloc %u bytes\n", tokn * sizeof *tokv);
+			die("cannot realloc %u bytes:", tokn * sizeof *tokv);
 	len = tokc ? strlen(tokv[0]) : 0;
 
 	matches = lprefix = lsubstr = matchend = prefixend = substrend = NULL;
@@ -545,7 +545,7 @@ setup(void)
 #ifdef XINERAMA
 	if ((info = XineramaQueryScreens(dpy, &n))) {
 		XGetInputFocus(dpy, &w, &di);
-		if (mon != -1 && mon < n)
+		if (mon >= 0 && mon < n)
 			i = mon;
 		else if (w != root && w != PointerRoot && w != None) {
 			/* find top-level window containing current input focus */
@@ -562,7 +562,7 @@ setup(void)
 					}
 		}
 		/* no focused window is on screen, so use pointer location instead */
-		if (mon == -1 && !area && XQueryPointer(dpy, root, &dw, &dw, &x, &y, &di, &di, &du))
+		if (mon < 0 && !area && XQueryPointer(dpy, root, &dw, &dw, &x, &y, &di, &di, &du))
 			for (i = 0; i < n; i++)
 				if (INTERSECT(x, y, 1, 1, info[i]))
 					break;
@@ -653,14 +653,14 @@ main(int argc, char *argv[])
 	if (!setlocale(LC_CTYPE, "") || !XSupportsLocale())
 		fputs("warning: no locale support\n", stderr);
 	if (!(dpy = XOpenDisplay(NULL)))
-		die("cannot open display\n");
+		die("cannot open display");
 	screen = DefaultScreen(dpy);
 	root = RootWindow(dpy, screen);
 	sw = DisplayWidth(dpy, screen);
 	sh = DisplayHeight(dpy, screen);
 	drw = drw_create(dpy, screen, root, sw, sh);
 	if (!drw_fontset_create(drw, fonts, LENGTH(fonts)))
-		die("no fonts could be loaded.\n");
+		die("no fonts could be loaded.");
 	lrpad = drw->fonts->h;
 
 	if (fast) {
