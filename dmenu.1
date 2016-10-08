@@ -9,6 +9,14 @@ dmenu \- dynamic menu
 .RB [ \-r ]
 .RB [ \-l
 .IR lines ]
+.RB [ \-lh
+.IR lineheight ]
+.RB [ \-x
+.IR xpos ]
+.RB [ \-y
+.IR ypos ]
+.RB [ \-w
+.IR width ]
 .RB [ \-m
 .IR monitor ]
 .RB [ \-p
@@ -73,6 +81,7 @@ is present, the measurement will use the given monitor.
 .TP
 .BI \-w " width"
 sets the width of the dmenu window.
+.TP
 .BI \-lh " height"
 dmenu uses a menu line of at least 'height' pixels tall, but no less than 8.
 .TP
