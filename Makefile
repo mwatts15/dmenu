@@ -61,6 +61,9 @@ install: all
 	@chmod 644 ${DESTDIR}${MANPREFIX}/man1/dmenu.1
 	@chmod 644 ${DESTDIR}${MANPREFIX}/man1/stest.1
 
+install-ruby:
+	@cp dmenu_util.rb ${HOME}/.ruby/
+
 uninstall:
 	@echo removing executables from ${DESTDIR}${PREFIX}/bin
 	@rm -f ${DESTDIR}${PREFIX}/bin/dmenu
@@ -71,4 +74,4 @@ uninstall:
 	@rm -f ${DESTDIR}${MANPREFIX}/man1/dmenu.1
 	@rm -f ${DESTDIR}${MANPREFIX}/man1/stest.1
 
-.PHONY: all options clean dist install uninstall
+.PHONY: all options clean dist install install-ruby uninstall
