@@ -35,6 +35,7 @@ struct item {
 
 static char text[BUFSIZ] = "";
 static int bh, mw, mh;
+static double dmwperc = 100.0;
 static int sw, sh; /* X display screen geometry width, height */
 static int dmx = 0; /* put dmenu at this x offset */
 static int dmy = 0; /* put dmenu at this y offset (measured from the bottom if topbar is 0) */
@@ -573,7 +574,9 @@ setup(void)
 
 		x = info[i].x_org + dmx;
 		y = info[i].y_org + (topbar ? dmy : info[i].height - mh - dmy);
-		mw = (dmw>0 ? dmw : info[i].width);
+		mw = (dmw > 0 ? dmw : info[i].width);
+		mw = (mw > info[i].width ? info[i].width : mw);
+		mw = (info[i].width * (dmwperc / 100.0));
 		XFree(info);
 	} else
 #endif
@@ -581,6 +584,8 @@ setup(void)
 		x = dmx;
 		y = topbar ? dmy : sh - mh - dmy;
 		mw = (dmw>0 ? dmw : sw);
+		mw = (mw > sw ? sw : mw);
+		mw = dmwperc ? mw : (sw * (dmwperc / 100.0));
 	}
 	promptw = (prompt && *prompt) ? TEXTW(prompt) - lrpad / 4 : 0;
 	inputw = MIN(inputw, mw/3);
@@ -642,9 +647,14 @@ main(int argc, char *argv[])
 			dmx = atoi(argv[++i]);
 		else if (!strcmp(argv[i], "-y"))   /* window y offset (from bottom up if -b) */
 			dmy = atoi(argv[++i]);
-		else if (!strcmp(argv[i], "-w"))   /* make dmenu this wide */
-			dmw = atoi(argv[++i]);
-		else if (!strcmp(argv[i], "-m"))
+		else if (!strcmp(argv[i], "-w")) { /* make dmenu this wide */
+			const char *n = argv[++i];
+			if (n[strlen(n) - 1] == '%') {
+				dmwperc = MIN(strtod(n, (char**)NULL), 100.0);
+				dmwperc = MAX(dmwperc, 0);
+			} else
+				dmw = atoi(n);
+        } else if (!strcmp(argv[i], "-m"))
 			mon = atoi(argv[++i]);
 		else if (!strcmp(argv[i], "-p"))   /* adds prompt to left of input field */
 			prompt = argv[++i];
@@ -653,8 +663,7 @@ main(int argc, char *argv[])
 		else if(!strcmp(argv[i], "-lh")) { /* minimum height of one menu line */
 			lineheight = atoi(argv[++i]);
 			lineheight = MAX(lineheight,8); /* reasonable default in case of value too small/negative */
-		}
-		else if (!strcmp(argv[i], "-nb"))  /* normal background color */
+		} else if (!strcmp(argv[i], "-nb"))  /* normal background color */
 			colors[SchemeNorm][ColBg] = argv[++i];
 		else if (!strcmp(argv[i], "-nf"))  /* normal foreground color */
 			colors[SchemeNorm][ColFg] = argv[++i];
