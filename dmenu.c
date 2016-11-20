@@ -574,18 +574,18 @@ setup(void)
 
 		x = info[i].x_org + dmx;
 		y = info[i].y_org + (topbar ? dmy : info[i].height - mh - dmy);
+		mw = (info[i].width * (dmwperc / 100.0));
 		mw = (dmw > 0 ? dmw : info[i].width);
 		mw = (mw > info[i].width ? info[i].width : mw);
-		mw = (info[i].width * (dmwperc / 100.0));
 		XFree(info);
 	} else
 #endif
 	{
 		x = dmx;
 		y = topbar ? dmy : sh - mh - dmy;
+		mw = dmwperc ? mw : (sw * (dmwperc / 100.0));
 		mw = (dmw>0 ? dmw : sw);
 		mw = (mw > sw ? sw : mw);
-		mw = dmwperc ? mw : (sw * (dmwperc / 100.0));
 	}
 	promptw = (prompt && *prompt) ? TEXTW(prompt) - lrpad / 4 : 0;
 	inputw = MIN(inputw, mw/3);

@@ -5,44 +5,45 @@ class String
         super
         force_encoding("utf-8")
     end
-    def kanji_off
-        # Gives me the number of spaces "missing" with double-width
-        # kanji characters. Used for formatting adjustment
-        (self.bytes.count - self.length) / 2
-    end
-    alias :| alignr
 end
 module Dmenu
-    def dmenu (entries, prompt='select an item', height=false,
+    require 'wcwidth'
+    def self.dmenu (entries, prompt='select an item', height=false,
                   width=1366,
-                  fg_color='"#FFFFFF"',
-                  bg_color='"#000000"',
-                  sel_fg_color='"#555555"',
-                  sel_bg_color='"#eeeeee"',
-                  font='"Sazanami Mincho":pixelsize=14',
+                  fg_color='#FFFFFF',
+                  bg_color='#000000',
+                  sel_fg_color='#555555',
+                  sel_bg_color='#eeeeee',
+                  font='Sazanami Mincho:pixelsize=14',
                   line_height=nil)
         if !height
             height=entries.count
         end
-        md = font.to_s.match(":pixelsize=(\d+)")
+        md = font.to_s.match('.*:pixelsize=(\d+).*')
         if md.nil?
             font_width = 14 #in pixels
         else
-            font_width = md[1]
+            font_width = md[1].to_i
         end
-        res = ""
 
+        res = ""
+        lr_separation = 4
+        textwidth = 2 * width / font_width - lr_separation
+        puts(textwidth)
         entries.collect! do |line|
             l, r = line.split("|||")
-            r ? alignr(lhs, r.scrunch(width / font_width), width) : l
+            scrunched = scrunch(r, [textwidth - l.width - lr_separation, textwidth / 2].max)
+            s = r ? alignr(l, scrunched, textwidth) : l
+            puts("w=#{s.width}, l=#{s.length}")
+            s
         end
-        cmdline = "dmenu -f -p \"#{prompt}\" -nf #{fg_color} \
-        -nb #{bg_color} \
-        -sb #{sel_bg_color} \
-        -sf #{sel_fg_color} \
+        cmdline = "dmenu -f -p \"#{prompt}\" -nf \"#{fg_color}\" \
+        -nb \"#{bg_color}\" \
+        -sb \"#{sel_bg_color}\" \
+        -sf \"#{sel_fg_color}\" \
         -i -l #{height} \
-        -w #{width} \
-        -fn #{font} " + (if line_height.nil? then "" else "-lh " + line_height.to_s end)
+        -w \"#{width}\" \
+        -fn \"#{font}\" " + (if line_height.nil? then "" else "-lh " + line_height.to_s end)
 
         err_messages = nil
         Open3.popen3(cmdline) do |i, o, e, t|
@@ -59,22 +60,36 @@ module Dmenu
         end
         res.to_s.chomp
     end
-    def alignr(lhs, r, w)
-        str = lhs + r.rjust(w - lhs.width, '.')
+    def self.alignr(lhs, r, w)
+        x = r
+        str = lhs + x
+        while str.width < w
+            x = '.' + x
+            str = lhs + x
+        end
         str
     end
-    def scrunch(str, size, dots='...')
-        if str.length < size
+    def self.scrunch(str, size, dots='...')
+        puts("scrunching #{str} to #{size}")
+        if str.nil?
+            nil
+        elsif str.width < size
             str
         else
-            middle = self.length / 2
+            middle = str.length / 2
             # Not centered; intentional
             lhs = str[0..middle]
             rhs = str[-middle..-1]
+            lr = false
             while str.width > size
+                if lr
+                    lhs = lhs[0..-2]
+                else
+                    rhs = rhs[1..-1]
+                end
+                lr = !lr
                 str = lhs + dots + rhs
-                lhs = lhs[0..-2]
-                rhs = rhs[1..-1]
+                puts("scrunching width="+ str.width.to_s)
             end
             str
         end
