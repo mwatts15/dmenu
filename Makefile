@@ -62,7 +62,7 @@ install: all
 	@chmod 644 ${DESTDIR}${MANPREFIX}/man1/stest.1
 
 install-ruby:
-	@cp dmenu_util.rb ${HOME}/.ruby/
+	@cd ruby && rm -f *.gem && gem build *.gemspec && gem install --user *.gem
 
 uninstall:
 	@echo removing executables from ${DESTDIR}${PREFIX}/bin

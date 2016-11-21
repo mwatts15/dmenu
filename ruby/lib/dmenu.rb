@@ -8,6 +8,11 @@ class String
 end
 module Dmenu
     require 'wcwidth'
+    # Characters that, in the keyed fonts, are actually double width,
+    # but not reported as such by wcwidth. This isn't an exhaustive list,
+    # just characters I found by visually scanning some titles in my music
+    # collection
+    $DBL_CHARS = {'Noto Sans Mono CJK JP Regular' => '∞♥ⅢⅣ☆…→'}
     def self.dmenu (entries, prompt='select an item', height=false,
                   width=1366,
                   fg_color='#FFFFFF',
@@ -26,15 +31,20 @@ module Dmenu
             font_width = md[1].to_i
         end
 
+        findex = font.index(':')
+        base_font = font[0..(findex > 0 ? findex - 1 : -1)]
+        repl_chars = $DBL_CHARS[base_font]
         res = ""
         lr_separation = 4
         textwidth = 2 * width / font_width - lr_separation
-        puts(textwidth)
+        expr = %r{[^#{repl_chars}]+}
         entries.collect! do |line|
+            line = line.each_char.reject{|char| char.ord < 32 or (char.ord >= 0x7f and char.ord < 0xa0)}.inject(:+)
             l, r = line.split("|||")
+            loff = l.gsub(expr, "").length
+            roff =  r.nil? ? 0 : r.gsub(expr, "").length
             scrunched = scrunch(r, [textwidth - l.width - lr_separation, textwidth / 2].max)
-            s = r ? alignr(l, scrunched, textwidth) : l
-            puts("w=#{s.width}, l=#{s.length}")
+            s = r ? alignr(l, scrunched, textwidth - loff - roff) : l
             s
         end
         cmdline = "dmenu -f -p \"#{prompt}\" -nf \"#{fg_color}\" \
@@ -70,7 +80,6 @@ module Dmenu
         str
     end
     def self.scrunch(str, size, dots='...')
-        puts("scrunching #{str} to #{size}")
         if str.nil?
             nil
         elsif str.width < size
@@ -89,7 +98,6 @@ module Dmenu
                 end
                 lr = !lr
                 str = lhs + dots + rhs
-                puts("scrunching width="+ str.width.to_s)
             end
             str
         end
