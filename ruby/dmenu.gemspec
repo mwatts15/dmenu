@@ -1,8 +1,8 @@
 # coding: utf-8
 
 Gem::Specification.new do |spec|
-  spec.name          = "dmenu"
-  spec.version       = "1.0.0"
+  spec.name          = "markw-dmenu"
+  spec.version       = "1.1.0"
   spec.authors       = ["Mark Watts"]
   spec.email         = ["wattsmark2015@gmail.com"]
   spec.summary       = %q{A set of utilites for working with the dmenu command line tool.}

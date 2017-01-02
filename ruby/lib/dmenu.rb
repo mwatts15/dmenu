@@ -6,6 +6,7 @@ class String
         force_encoding("utf-8")
     end
 end
+
 module Dmenu
     require 'wcwidth'
     # Characters that, in the keyed fonts, are actually double width,
@@ -37,16 +38,28 @@ module Dmenu
         res = ""
         lr_separation = 4
         textwidth = 2 * width / font_width - lr_separation
-        expr = %r{[^#{repl_chars}]+}
-        entries.collect! do |line|
-            line = line.each_char.reject{|char| char.ord < 32 or (char.ord >= 0x7f and char.ord < 0xa0)}.inject(:+)
-            l, r = line.split("|||")
-            loff = l.gsub(expr, "").length
-            roff =  r.nil? ? 0 : r.gsub(expr, "").length
-            scrunched = scrunch(r, [textwidth - l.width - lr_separation, textwidth / 2].max)
-            s = r ? alignr(l, scrunched, textwidth - loff - roff) : l
-            s
+        if !repl_chars.nil?
+            expr = %r{[^#{repl_chars}]+}
         end
+        entries.collect! do |line|
+            transformed_line = line.each_char.reject{|char| char.ord < 32 or (char.ord >= 0x7f and char.ord < 0xa0)}.inject(:+)
+            s = if !transformed_line.nil?
+                l, r = transformed_line.split("|||")
+                loff = 0
+                roff = 0
+                if !repl_chars.nil?
+                    loff = l.gsub(expr, "").length
+                    roff =  r.nil? ? 0 : r.gsub(expr, "").length
+                end
+                scrunched = scrunch(r, [textwidth - l.width - lr_separation, textwidth / 2].max)
+                r ? alignr(l, scrunched, textwidth - loff - roff) : l
+            else
+                $stderr.puts "Couldn't list #{line.inspect}"
+                nil
+            end
+            s
+        end.reject! {|x| x.nil? or x.empty? or x.match(/\s+/) }
+
         cmdline = "dmenu -f -p \"#{prompt}\" -nf \"#{fg_color}\" \
         -nb \"#{bg_color}\" \
         -sb \"#{sel_bg_color}\" \
