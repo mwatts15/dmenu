@@ -58,7 +58,7 @@ module Dmenu
                 nil
             end
             s
-        end.reject! {|x| x.nil? or x.empty? or x.match(/\s+/) }
+        end.reject! {|x| x.nil? or x.empty? or x.match(/^\s+$/) }
 
         cmdline = "dmenu -f -p \"#{prompt}\" -nf \"#{fg_color}\" \
         -nb \"#{bg_color}\" \
