@@ -6,7 +6,7 @@ include config.mk
 SRC = drw.c dmenu.c stest.c util.c
 OBJ = ${SRC:.c=.o}
 
-all: options dmenu stest
+all: options dmenu stest ruby
 
 options:
 	@echo dmenu build options:
@@ -61,8 +61,14 @@ install: all
 	@chmod 644 ${DESTDIR}${MANPREFIX}/man1/dmenu.1
 	@chmod 644 ${DESTDIR}${MANPREFIX}/man1/stest.1
 
-install-ruby:
-	@cd ruby && rm -f *.gem && gem build *.gemspec && gem install --user *.gem
+ruby ruby/markw-dmenu.gem:
+	@echo making ruby gem
+	@cd ruby && rm -f *.gem && gem build *.gemspec
+	@cd ruby && cp *.gem markw-dmenu.gem
+
+install-ruby: ruby/markw-dmenu.gem
+	@echo installing ruby gem
+	@cd ruby && gem install markw-dmenu.gem
 
 uninstall:
 	@echo removing executables from ${DESTDIR}${PREFIX}/bin
@@ -74,4 +80,4 @@ uninstall:
 	@rm -f ${DESTDIR}${MANPREFIX}/man1/dmenu.1
 	@rm -f ${DESTDIR}${MANPREFIX}/man1/stest.1
 
-.PHONY: all options clean dist install install-ruby uninstall
+.PHONY: all options clean dist install ruby install-ruby uninstall
